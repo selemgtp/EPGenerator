@@ -1,0 +1,6 @@
+# https://odan.github.io/2019/11/05/slim4-tutorial.html#routing-setup
+
+RewriteEngine on
+RewriteRule ^$ public_html/ [L]
+RewriteCond  %{REQUEST_URI} !^/endpointSql/Generator
+RewriteRule (.*) public_html/$1 [L]

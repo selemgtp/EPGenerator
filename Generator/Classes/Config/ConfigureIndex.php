@@ -1,0 +1,131 @@
+<?php
+declare(strict_types=1);
+namespace CrudGenerator\Config;
+class ConfigureIndex{
+
+    public static $indexContent = '
+
+    declare(strict_types=1);
+
+    use Crud\Handlers\HttpErrorHandler;
+    use Crud\Handlers\ShutdownHandler;
+    use Crud\ResponseEmitter\ResponseEmitter;
+    use DI\ContainerBuilder;
+    use Slim\Factory\AppFactory;
+    use Slim\Factory\ServerRequestCreatorFactory;
+    use Illuminate\Database\Capsule\Manager;
+
+    require __DIR__ . "/../vendor/autoload.php";
+    // Instantiate PHP-DI ContainerBuilder
+    $containerBuilder = new ContainerBuilder();
+    if (false) {
+    // Should be set to true in production
+        $containerBuilder->enableCompilation(__DIR__ . "/../var/cache");
+    }
+
+    // Set up settings
+    $settings = require __DIR__ . "/../config/settings.php";
+    $settings($containerBuilder);
+    // Set up dependencies
+    $dependencies = require __DIR__ . "/../app/dependencies.php";
+    $dependencies($containerBuilder);
+    // Set up repositories
+    /*$repositories = require __DIR__ . "/../app/repositories.php";
+    $repositories($containerBuilder);*/
+    // Build PHP-DI Container instance
+    $container = $containerBuilder->build();
+    // Instantiate the app
+    AppFactory::setContainer($container);
+    $app = AppFactory::create();
+    //agregar si los microservicios corren en subcarpetas
+    //$app->setBasePath("");
+
+    $databases = $container->get("settings")["databases"];
+
+    $capsule = new Manager();
+
+    foreach ($databases as $key => $value) {
+        $capsule->addConnection($databases[$key], $key);
+    }
+
+    $capsule->setAsGlobal();
+    $capsule->bootEloquent();
+
+    $callableResolver = $app->getCallableResolver();
+    // Register middleware
+    $middleware = require __DIR__ . "/../config/middleware.php";
+    $middleware($app);
+    // Register routes
+    $routes = require __DIR__ . "/../config/routes.php";
+    $routes($app);
+    /** @var bool $displayErrorDetails */
+    //$displayErrorDetails = $container->get("settings")["displayErrorDetails"];
+    $displayErrorDetails = true;
+    // Create Request object from globals
+    $serverRequestCreator = ServerRequestCreatorFactory::create();
+    $request = $serverRequestCreator->createServerRequestFromGlobals();
+    // Create Error Handler
+    $responseFactory = $app->getResponseFactory();
+    $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
+    // Create Shutdown Handler
+    $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
+    register_shutdown_function($shutdownHandler);
+    /**
+     * Add Routing Middleware
+     *
+     * The routing middleware should be added earlier than the ErrorMiddleware
+     * Otherwise exceptions thrown from it will not be handled by the middleware
+     */
+    $app->addRoutingMiddleware();
+    /**
+     * Add Error Middleware
+     *
+     * @param bool $displayErrorDetails -> Should be set to false in production
+     * @param bool $logErrors -> Parameter is passed to the default ErrorHandler
+     * @param bool $logErrorDetails -> Display error details in error log
+     * which can be replaced by a callable of your choice.
+     * @param \Psr\Log\LoggerInterface $logger -> Optional PSR-3 logger to receive errors
+     *
+     * Note: This middleware should be added last. It will not handle any exceptions/errors
+     * for middleware added after it.
+     */
+    $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
+    $errorMiddleware->setDefaultErrorHandler($errorHandler);
+    // Run App & Emit Response
+    $response = $app->handle($request);
+    $responseEmitter = new ResponseEmitter();
+    $responseEmitter->emit($response);
+
+
+    ';
+
+    public static $replaceString = '//$app->setBasePath("");';
+
+    public static function generate($pathFile, $basePath){
+
+        if (file_exists($pathFile)){
+            @unlink($pathFile);
+        }
+        $index = fopen($pathFile, "w");
+
+        fwrite($index, "<?php" . PHP_EOL);
+
+        $indexString = self::$indexContent;
+
+        if ($basePath != ""){
+            $indexString = str_replace(self::$replaceString,'$app->setBasePath("'.$basePath.'");', $indexString);
+        }
+
+        fwrite($index, $indexString . PHP_EOL);
+
+        fwrite($index, "?>".PHP_EOL);
+
+        fclose($index);
+
+
+    }
+
+}
+
+
+?>

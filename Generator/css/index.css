@@ -1,0 +1,52 @@
+body{
+    background: #ffffff;
+   background: -moz-radial-gradient(center, ellipse cover, #ffffff 0%, #f6f6f6 47%, #ededed 100%);
+   background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, #ffffff), color-stop(47%, #f6f6f6), color-stop(100%, #ededed));
+   background: -webkit-radial-gradient(center, ellipse cover, #ffffff 0%, #f6f6f6 47%, #ededed 100%);
+   background: -o-radial-gradient(center, ellipse cover, #ffffff 0%, #f6f6f6 47%, #ededed 100%);
+   background: -ms-radial-gradient(center, ellipse cover, #ffffff 0%, #f6f6f6 47%, #ededed 100%);
+   background: radial-gradient(ellipse at center, #ffffff 0%, #f6f6f6 47%, #ededed 100%);
+   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ededed', GradientType=1 );
+    }
+   
+   .cool-b4-form .btn {
+     border-radius: 0;
+   }
+   .cool-b4-form .form-group {
+     position: relative;
+     padding-top: 20px;
+     margin-bottom: 0;
+     /* If there's only 1 input make it full height */
+   }
+   .cool-b4-form .form-group:first-child:last-child {
+     height: 100%;
+   }
+   .cool-b4-form .form-group:first-child:last-child .form-control {
+     height: 100%;
+   }
+   .cool-b4-form .form-group textarea {
+     resize: none;
+   }
+   .cool-b4-form .form-group .input-highlight {
+     content: "";
+     width: 0;
+     height: 2px;
+     background: #ffc107;
+     position: absolute;
+     display: block;
+     bottom: 0;
+     -webkit-transition: width 0.4s ease;
+     transition: width 0.4s ease;
+   }
+   .cool-b4-form .form-group .form-control:focus, .cool-b4-form .form-group .form-control.hasValue {
+     box-shadow: none;
+     border-color: #ced4da;
+   }
+   .cool-b4-form .form-group .form-control:focus ~ .input-highlight, .cool-b4-form .form-group .form-control.hasValue ~ .input-highlight {
+     width: 100%;
+   }
+   .cool-b4-form .form-group .form-control:focus, .cool-b4-form .form-group .form-control.hasValue {
+
+     top: 0;
+     left: 0;
+   }
