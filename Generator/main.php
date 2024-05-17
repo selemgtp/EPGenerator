@@ -34,7 +34,7 @@ if (!isset($_SESSION["id"])){
                 </div>
             </div>
         </div>
-        <div class="col-sm-4 py-2">
+        <!--<div class="col-sm-4 py-2">
             <div class="card h-100 text-white bg-primary">
                 <div class="card-body">
                     <h3 class="card-title">Crud´s API</h3>
@@ -42,7 +42,7 @@ if (!isset($_SESSION["id"])){
                     <a href="http://ms.gtp.bz/crud/docs/" target="_blank" class="btn btn-outline-light">Ir a documentación</a>
                 </div>
             </div>
-        </div>
+        </div>-->
         <div class="col-sm-4 py-2">
             <div class="card text-white bg-danger">
                 <div class="card-body">

@@ -15,16 +15,39 @@ La herramienta funciona solo con subirse a un servidor cualquiera. Se debe tener
 
 ## Estructra
 
-- `config` : Esta carpeta contiene ficheros de configuración del Api REST Slim4. Se modifican cada vez que se genera un nuevo Endpoint (excepto el fichero `env.php`).
-- `src` : Esta carpeta va a contener todos los fichero `.php` que van a contener la lógica del nuevo Endpoint.
+- `config`: Esta carpeta contiene ficheros de configuración del Api REST Slim4. Se modifican cada vez que se genera un nuevo Endpoint (excepto el fichero `env.php`).
+- `src`: Esta carpeta va a contener todos los fichero `.php` que van a contener la lógica del nuevo Endpoint.
 - `Generator`: Contiene todo lo relacionado al generador. 
+- `public_html`: Contiene el Swagger UI y l archivo `index.php` que permite que el API funcione y los endpoints estén disponible.
+- `nodeApi`: Contiene el código de un API Rest `NodeJS express.js` que permite usar `node-sql-parser` en el contexto de PHP (consumiendo el API). Esta API también contiene docuemntación Swagger que explica su consumo.
 
+Los archivos a tener en cuenta para configurar el entorno de trabajo de la herramienta son los siguientes:
+
+- `Generator/Database/database.php` y `config/settings.php`: Contienen el listado de todas las Bases de Datos para las cuales se van a crear los endpoints. Deben ser las mismas en ambos ficheros.
+- `Generator/apiFunctions.php`: Se debe modificar la variable `$URL_CONSUME` del método `consumeApi`. Este es el dominio donde se despliega la `NodeJS express.js` del directorio `nodeApi`.
+- `Generator/users.json`: Contiene el listado de usuario con acceso a la herramienta Web. El password está encriptado con `Sha1`.  No obstante, se pretende migrar a login mediante Base de Datos a futuro.
+- `Generator/modules.php`: Contiene un `CURL` que consume el nombre de los módulos a trabajar. Esto permite segmentar los endpoints por agrupaciones. Util para el orden y la documentación Swagger. Si no se obtienen desde un endpoint externo a la herramienta, es posible crear un array de esta forma:
+
+    ```php
+    $modules = array(
+        array("nombre" => "Modulo 1"),
+        array("nombre" => "Modulo 2"),
+        array("nombre" => "Modulo 3")
+    );
+
+    echo json_encode($modules);
+    ```
+
+- `public_html/index.php`: En este fichero se debe configurar la `$app->setBasePath("/endpointSql");` con el directorio donde se va a alojar la herramienta a nivel de servidor.
+
+- `.htaccess`: Se debe configurar la misma ruta configurada en `public_html` en la línea y agregando la carpeta `Generator`: `RewriteCond  %{REQUEST_URI} !^/endpointSql/Generator`
 ## Uso
 
 Existen 2 formas de crear Endpoints: 
 
-- Interfaz gráfica: `https://domain/Generator/login.html` permite ingresar con un usuario y contraseña configurados en el archivo `Generator/users.json`. El password está encriptado con `Sha1`.  No obstante, se pretende migrar a login mediante Base de Datos.
-- Endpoint: Puede consumirse el Endpoint `https://domain/Generator/createEndpointRest.php` mediante `POST`.
+- Interfaz gráfica: `https://domain/Generator/login.html` permite ingresar con un usuario y contraseña configurados en el archivo `Generator/users.json`. 
+- Endpoint: Puede ejecutar la acción mediante el consumo de `https://domain/Generator/createEndpointRest.php` usando el método `POST`.
+
 ```php
 <?php
 function consumeApi($requestBody){
@@ -83,13 +106,16 @@ echo $responseBody;
 ?>
 ```
 
-También existe posibilidad de simular la creación del endpoint medinate el Endpoint `https://domain/Generator/testingEndpoint.php`.
+También existe posibilidad de simular la creación del endpoint mediante el Endpoint `https://domain/Generator/testingEndpoint.php`.
+
+
+Cuando se crean nuevos endpoints a través de solicitudes POST (no interfaz gráfica), se apoya en el consumo del API de `NodeJS express.js` para ejecutar [node-sql-parser](https://www.npmjs.com/package/node-sql-parser) en entorno de servidor y validar los SQL.  
 
 ## Contenido de los Endpoints
 
 - Se pueden crear Endpoints tipo `GET, POST, PUT y DELETE` dependiendo de la sentencia trabajada.
 - Se agrega toda la documentación OpenApi que permite tener el Swagger del Endpoint.
-- Cuando se genera un nuevo Endpoint, se retorna toda la información asociada al suceso. Se puede ver en el fichero :
+- Cuando se genera un nuevo Endpoint, se retorna toda la información asociada al suceso. Se puede ver en el fichero:
 ```php
 <?php
  $arrayResponseFinal["api"] = array(
@@ -104,4 +130,3 @@ También existe posibilidad de simular la creación del endpoint medinate el End
 ?>
 ```
 - Cada nuevo Endpoint genera un fichero `.php` con toda la lógica de conexión, validaciones, documentación y ejecución.
-_Documentación en construcción..._
